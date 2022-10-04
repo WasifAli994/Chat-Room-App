@@ -1,11 +1,33 @@
-const { Socket } = require('socket.io')
-const webSocket = require('ws')
-const server = new WebSocket.server({pert: '8080'})
+const express = require('express');
+const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
 
-server.on('connection', (seocket) => {
+app.get('/', (req, res) => {
+    res.sendFile('index.html', { root: '../frontend' });
+});
 
-    Socket.on('message', (message) => {
-        
-        Socket.send(`Roger That! ${message}`)
-    })
-})
+io.on('connection', (socket) => {
+    console.log('New User joined the chat!');
+    socket.on('disconnect', () => {
+      console.log('User left the chat!');
+    });
+  });
+
+io.on('connection', (socket) => {
+    socket.on('chat message', (msg) => {
+      console.log('message: ' + msg);
+    });
+  });
+
+  io.on('connection', (socket) => {
+    socket.on('chat message', (msg) => {
+      io.emit('chat message', msg);
+    });
+  });
+
+server.listen(3000, () => {
+  console.log('listening on :3000');
+});
